@@ -4,7 +4,9 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        - VITE_API_BASE_URL=
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+    env_file:
+      - ./client/.env
     restart: unless-stopped
     depends_on:
       - server
@@ -16,6 +18,8 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    env_file:
+      - ./server/.env
     restart: unless-stopped
     environment:
       - NODE_ENV=production
