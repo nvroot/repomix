@@ -4,9 +4,9 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+        - VITE_API_BASE_URL=https://mix.nvroot.de
     env_file:
-      - ./client/.env
+      - .env
     restart: unless-stopped
     depends_on:
       - server
@@ -19,7 +19,7 @@ services:
       context: ./server
       dockerfile: Dockerfile
     env_file:
-      - ./server/.env
+      - .env
     restart: unless-stopped
     environment:
       - NODE_ENV=production
