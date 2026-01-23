@@ -56,7 +56,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = import.meta.env.PROD ? 'https://api.repomix.com' : 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? 'https://repo.example.com' : 'http://localhost:8080');
 
 export async function packRepository(request: PackRequest): Promise<PackResult> {
   const formData = new FormData();

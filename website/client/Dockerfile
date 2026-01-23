@@ -1,32 +1,42 @@
 # ==============================================================================
-# Base stage
+# Build stage
 # ==============================================================================
-FROM node:24-alpine AS base
+FROM node:24-alpine AS builder
 
 # Install Git (required for VitePress)
 RUN apk add --no-cache git
 
 WORKDIR /app
 
-# ==============================================================================
-# Dependencies installation stage
-# ==============================================================================
-FROM base AS deps
-
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install all dependencies (with npm cache optimization)
-RUN npm ci && npm cache clean --force
-
-# ==============================================================================
-# Development stage
-# ==============================================================================
-FROM deps AS development
+# Install dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-EXPOSE 5173
+# Build argument for API URL
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
-CMD ["npm", "run", "docs:dev"]
+# Build the documentation
+RUN npm run docs:build
+
+# ==============================================================================
+# Runtime stage
+# ==============================================================================
+FROM nginx:alpine AS runtime
+
+# Copy built assets from builder stage
+# VitePress default build output is .vitepress/dist
+COPY --from=builder /app/.vitepress/dist /usr/share/nginx/html
+
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port (internal only, will be mapped by compose if needed, but per requirements we won't expose to host)
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
